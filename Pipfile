@@ -7,7 +7,6 @@ verify_ssl = true
 
 [packages]
 py-nextbus = "*"
-<<<<<<< HEAD
 flask = "*"
 requests = "*"
 flask-sqlalchemy = "*"
