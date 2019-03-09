@@ -1,6 +1,7 @@
 - [ x ] create a list that associates every MUNI stop with the URL Ross gives us for the Clipper listeners
 - [ ] POST /queue {"message": str, "origin_stop": str}
-  - is there a bus at that stop at this time? Yes, enqueue. No, 404 bus not found.
+  - is there a bus at that stop at this time? Yes, enqueue and associate with vehicle. No, 404 bus not found.
 - [ ] enqueue logic associate vehicle with messages
 - [ ] deliver messages when they get to a stop (push into a Clipper listener) when a bus arrives (backgroudn task)
-  - use the getPrediction API for stops and if there's one with minutes=0 then a bus is there
+  - use the getPrediction API for all stops and if a bus is there that has a message then call the registered API
+  - or look up vehicle locations and do lat+long math to determine if it's at a stop and deliver message if so
