@@ -7,6 +7,6 @@ verify_ssl = true
 
 [packages]
 py-nextbus = "*"
-
-[requires]
-python_version = "3.6"
+flask = "*"
+requests = "*"
+flask-sqlalchemy = "*"
