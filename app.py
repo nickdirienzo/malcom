@@ -13,4 +13,5 @@ def load_stops(clipper_url):
             stops_to_listeners[stop['stopId']] = clipper_url
     return stops_to_listeners
 
+import pdb; pdb.set_trace()
 load_stops('ngrok')
