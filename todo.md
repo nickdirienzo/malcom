@@ -1,0 +1,5 @@
+- [ ] create a list that associates every MUNI stop with the URL Ross gives us for the Clipper listeners
+- [ ] POST /queue {"message": str, "origin_stop": str}
+  - is there a bus at that stop at this time? Yes, enqueue. No, 404 bus not found.
+- [ ] enqueue logic associate vehicle with messages
+- [ ] deliver messages when they get to a stop (push into a Clipper listener) when a bus arrives
