@@ -23,23 +23,26 @@ class Message(db.Model):
     vehicle_id = db.Column(db.String, nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.datetime.utcnow)
 
+class Listener(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    stop_tag = db.Column(db.String, nullable=False)
+    url = db.Column(db.String, nullable=False)
+
 client = py_nextbus.NextBusClient(output_format='json')
 client.agency = "sf-muni"
 
-stops_to_listeners = {}
-stops_to_routes = {}
 
 def load_stops(clipper_url):
     route_config = client.get_route_config()
     routes = route_config['route']
     for route in routes:
         for stop in route['stop']:
-            stops_to_listeners[stop['tag']] = clipper_url
-            stops_to_routes[stop['tag']] = route['tag']
+            listener = Listener(stop_tag=stop['tag'], url=clipper_url)
+            db.session.add(listener)
+
             s = Stop(tag=stop['tag'], route_tag=route['tag'])
             db.session.add(s)
     db.session.commit()
-    return stops_to_listeners
 
 
 @app.route('/board', methods=['POST'])
