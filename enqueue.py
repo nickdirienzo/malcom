@@ -63,7 +63,7 @@ def board_bus():
             bus_departing = True
             message = Message(
                 content=content,
-                stop_tag=stop,
+                stop_tag=stop.tag,
                 vehicle_id=prediction['vehicle']
             )
             db.session.add(message)
