@@ -48,7 +48,7 @@ def board_bus():
     stop_tag = str(request.json['stop'])
     stop = Stop.query.filter_by(tag=stop_tag).first()
     if stop is None:
-        abort(400)
+        return jsonify({'error': 'invalid stop tag'}), 400
 
     response = requests.get('http://webservices.nextbus.com/service/publicJSONFeed?command=predictions&a=sf-muni&s={}&r={}'.format(
         stop_tag,
