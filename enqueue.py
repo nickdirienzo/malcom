@@ -23,6 +23,14 @@ class Message(db.Model):
     vehicle_id = db.Column(db.String, nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.datetime.utcnow)
 
+    def serialize(self):
+        return {
+            'id': self.id,
+            'content': self.content,
+            'vehicle_id': self.vehicle_id,
+            'origin_stop': self.stop_tag,
+        }
+
 class Listener(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     stop_tag = db.Column(db.String, nullable=False)
@@ -43,6 +51,13 @@ def load_stops(clipper_url):
             s = Stop(tag=stop['tag'], route_tag=route['tag'])
             db.session.add(s)
     db.session.commit()
+
+
+@app.route('/messages')
+def get_messages():
+    vehicle_ids = request.args.getlist('v_id')
+    messages = Message.query.filter(Message.vehicle_id.in_(vehicle_ids)).all()
+    return jsonify({'messages': [m.serialize() for m in messages]})
 
 
 @app.route('/board', methods=['POST'])
