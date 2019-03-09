@@ -71,6 +71,8 @@ def board_bus():
             return jsonify({'vehicle_id': message.vehicle_id, 'boarded_at': message.created_at})
 
     if bus_departing is False:
-        return jsonify({'next_bus': {'minutes': predictions[0]['minutes'], 'seconds': predictions[0]['seconds']}}), 503
+        min_in_ms = int(predictions[0]['minutes']) * 60 * 1000
+        sec_in_ms = int(predictions[0]['seconds']) * 1000
+        return jsonify({'next_bus': min_in_ms + sec_in_ms}), 503
 
 
