@@ -14,7 +14,7 @@ db = SQLAlchemy(app)
 class Stop(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     tag = db.Column(db.String, nullable=False)
-    route_id = db.Column(db.String, nullable=False)
+    route_tag = db.Column(db.String, nullable=False)
 
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -36,7 +36,7 @@ def load_stops(clipper_url):
         for stop in route['stop']:
             stops_to_listeners[stop['tag']] = clipper_url
             stops_to_routes[stop['tag']] = route['tag']
-            s = Stop(tag=stop['tag'], route_id=route['tag'])
+            s = Stop(tag=stop['tag'], route_tag=route['tag'])
             db.session.add(s)
     db.session.commit()
     return stops_to_listeners
@@ -65,4 +65,3 @@ def board_bus():
         abort(503)
 
 
-load_stops('ngrok')
