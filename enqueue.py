@@ -1,6 +1,6 @@
 import datetime
 
-from flask import g, request, Flask, abort
+from flask import g, request, Flask, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 import py_nextbus
 import requests
@@ -44,14 +44,15 @@ def load_stops(clipper_url):
 
 @app.route('/board', methods=['POST'])
 def board_bus():
-    message = request.json['message']
-    stop = str(request.json['stop'])
-    if stop not in stops_to_routes:
+    content = request.json['message']
+    stop_tag = str(request.json['stop'])
+    stop = Stop.query.filter_by(tag=stop_tag).first()
+    if stop is None:
         abort(400)
 
     response = requests.get('http://webservices.nextbus.com/service/publicJSONFeed?command=predictions&a=sf-muni&s={}&r={}'.format(
-        stop,
-        stops_to_routes[stop]
+        stop_tag,
+        stop.route_tag
     ))
     predictions = response.json()['predictions']['direction']['prediction']
     bus_departing = False
@@ -60,8 +61,16 @@ def board_bus():
         # There's a bus departing. Enqueue.
         if minutes < 1:
             bus_departing = True
+            message = Message(
+                content=content,
+                stop_tag=stop,
+                vehicle_id=prediction['vehicle']
+            )
+            db.session.add(message)
+            db.session.commit()
+            return jsonify({'vehicle_id': message.vehicle_id, 'boarded_at': message.created_at})
 
     if bus_departing is False:
-        abort(503)
+        return jsonify({'next_bus': {'minutes': predictions[0]['minutes'], 'seconds': predictions[0]['seconds']}}), 503
 
 
