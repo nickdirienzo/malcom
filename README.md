@@ -8,7 +8,8 @@ Expect messages to be delayed, but eventually make it to their destinations.
 What are you even talking about?
 ================================
 
-
+Set up SQLite 
+=============
 
 ```
 pipenv run python
