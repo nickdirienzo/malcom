@@ -5,27 +5,48 @@ client.agency = "sf-muni"
 
 # route_id I think is actually route_tag in the api 
 
-def generate_route_graph( route_id ):
-    route_config = client.get_route_config( route_tag=route_id )
-    route = route_config['route']
-    route_list = []
-    for stop in route['stop']:
-        route_list.append({"route_tag": route_id, "stop_tag": int(stop['tag'])})
-    return route_list
-            
+def generate_route_graph():
+    route_config = client.get_route_config()
+    routes = route_config['route']
+    route_stop_lists = {} 
+    for route in routes:
+        route_id = route['tag']
+        route_stop_lists[route_id] = []
+        for stop in route['stop']:
+            route_stop_lists[route_id].append( {"route_tag": route_id, "stop_tag": int(stop['tag'])})
+    return route_stop_lists
 
-def find_vehicles_at_stops_for_route(route_id):
-    route_predictions = client.get_predictions_for_multi_stops(generate_route_graph(route_id))
-    route_predictions = route_predictions['predictions']
-    stop_vehicle_status = {} 
+route_stop_dict = generate_route_graph()
+
+def find_vehicles_at_stops_for_route(route):
+    route_predictions = client.get_predictions_for_multi_stops(route_stop_dict[route])
+    route_predictions = route_predictions.get('predictions') or []
+    stop_vehicle_status = {}
     for stop in route_predictions:
-        next_at_stop = stop['direction']['prediction'][0]
-        if int(next_at_stop['minutes']) < 2:
-            stop_vehicle_status[stop['stopTag']] = {'vehicle': next_at_stop['vehicle'], 'minutes': next_at_stop['minutes']}
+        try:
+            stop['direction']
+        except KeyError:
+            continue
+        if isinstance(stop['direction'], dict):
+            directions = [stop['direction']]
+        else:
+            directions = stop['direction']
+        for direction in directions:
+            if isinstance(direction['prediction'],list):
+                next_at_stop = direction['prediction'][0]
+            else:
+                next_at_stop = direction['prediction']
+            if int(next_at_stop['minutes']) < 2:
+                stop_vehicle_status[stop['stopTag']] = {'vehicle': next_at_stop['vehicle'], 'minutes': next_at_stop['minutes']}
     return stop_vehicle_status
 
-hot_garbage = find_vehicles_at_stops_for_route('F')
-# hot_garbage['predictions'][<stop>0]['stopTag']
-# hot_garbage['predictions'][<stop>0]['direction']['prediction'][0] > 'vehicle' 'minutes'
+ughhh = []
+for route in route_stop_dict.keys():
+    print(route)
+    ughhh.append(find_vehicles_at_stops_for_route(route))
+
+#hot_garbage = find_vehicles_at_stops_for_route('J')
 
 import pdb; pdb.set_trace()
+# hot_garbage['predictions'][<stop>0]['stopTag']
+# hot_garbage['predictions'][<stop>0]['direction']['prediction'][0] > 'vehicle' 'minutes'
