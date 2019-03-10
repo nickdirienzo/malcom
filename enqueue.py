@@ -54,6 +54,36 @@ def load_stops(clipper_url):
             db.session.add(s)
     db.session.commit()
 
+@app.route('/messages/<int:message_id>')
+def get_messages_by_id(message_id):
+    messages = [Message.query.get(message_id)]
+    route_tag = Stop.query.filter_by(tag=messages[0].stop_tag).first().route_tag
+
+    vehicle_to_messages = collections.defaultdict(list)
+    for message in messages:
+        vehicle_to_messages[message.vehicle_id].append(message)
+
+    messages_response = {'messages': []}
+    include_location = True
+    if include_location:
+        routes = [route_tag]
+        last_min_epoch = int(time.time()) - 60000
+        responses = []
+        for route in routes:
+            responses.append(client.get_vehicle_locations(route, last_min_epoch))
+        for response in responses:
+            for vehicle in response.get('vehicle') or []:
+                carried_messages = vehicle_to_messages[vehicle['id']]
+                to_ret = []
+                for msg in carried_messages:
+                    msg_serialize = msg.serialize()
+                    msg_serialize['lat'] = vehicle['lat']
+                    msg_serialize['lon'] = vehicle['lon']
+                    messages_response['messages'].append(msg_serialize)
+    return jsonify(messages_response)
+
+
+
 
 @app.route('/messages')
 def get_messages():
