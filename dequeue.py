@@ -1,4 +1,5 @@
 import py_nextbus
+import requests
 
 client = py_nextbus.NextBusClient(output_format='json')
 client.agency = "sf-muni"
@@ -40,11 +41,19 @@ def find_vehicles_at_stops_for_route(route):
                 stop_vehicle_status[stop['stopTag']] = {'vehicle': next_at_stop['vehicle'], 'minutes': next_at_stop['minutes']}
     return stop_vehicle_status
 
-ughhh = []
+all_stopped_vehicles = []
 for route in route_stop_dict.keys():
     print(route)
-    ughhh.append(find_vehicles_at_stops_for_route(route))
+    all_stopped_vehicles.append(find_vehicles_at_stops_for_route(route))
 
+stop_tags = []
+vehicle_ids = []
+for route in all_stopped_vehicles:
+    stop_tags += [k for k in route.keys()]
+    for stop, vehicle in route.items():
+        vehicle_ids.append(vehicle['vehicle'])
+
+response = requests.post('http://localhost:5000/broadcast', json={'stop_tags': stop_tags, 'vehicle_ids': vehicle_ids})
 #hot_garbage = find_vehicles_at_stops_for_route('J')
 
 import pdb; pdb.set_trace()

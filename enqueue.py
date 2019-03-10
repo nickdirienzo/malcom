@@ -153,4 +153,18 @@ def board_bus():
         sec_in_ms = int(predictions[0]['seconds']) * 1000
         return jsonify({'next_bus': min_in_ms + sec_in_ms}), 503
 
+@app.route('/broadcast', methods=['POST'])
+def broadcast():
+    vehicle_ids = request.json['vehicle_ids']
+    stop_tags = request.json['stop_tags']
+    messages = Message.query.filter(Message.vehicle_id.in_(vehicle_ids)).all()
+    listeners = Listener.query.filter(Listener.stop_tag.in_(stop_tags)).all()
+    for listener in listeners:
+        for message in messages:
+            requests.post(listener.url, json=message.serialize())
+    return 'success'
 
+@app.route('/self', methods=['POST'])
+def self_route():
+    print(request.json)
+    return ''
