@@ -162,28 +162,32 @@ def broadcast():
     stop_tags = request.json['stop_tags']
     vehicle_to_stop = request.json['vehicle_to_stop']
     messages = Message.query.filter(Message.vehicle_id.in_(vehicle_ids)).all()
-    actual_vehicles = []
+    actual_vehicles = collections.defaultdict(list)
     for message in messages:
-        actual_vehicles.append(message.vehicle_id)
+        actual_vehicles[message.vehicle_id].append(message)
     print(actual_vehicles)
     actual_stops = []
-    for v in actual_vehicles:
+    for v in actual_vehicles.keys():
         actual_stops.append(vehicle_to_stop[v])
     print(actual_stops)
     all_messages = Message.query.all()
     print(f'Messages to send: {len(messages)} / {len(all_messages)}')
     listeners = Listener.query.filter(Listener.stop_tag.in_(actual_stops)).all()
+    listeners_by_stop = collections.defaultdict(list) 
+    for listener in listeners:
+        listeners_by_stop[listener.stop_tag].append(listener)
     all_listeners = Listener.query.all()
     print(f'Listeners to send to: {len(listeners)} / {len(all_listeners)}')
-    for listener in listeners:
-        for message in messages:
-            print(f'Sending Message {message.id} on bus {message.vehicle_id} to {listener.id} ({listener.url}) because stop {listener.stop_tag}')
-            payload = message.serialize()
-            payload['stop_tag'] = listener.stop_tag
-            requests.post(listener.url, json=payload)
+
+    for vehicle, messages in actual_vehicles.items():
+        current_stop = vehicle_to_stop[vehicle]
+        listeners = listeners_by_stop[current_stop]
+        for listener in listeners:
+            for message in messages:
+                print(f'Sending Message {message.id} on bus {message.vehicle_id} to {listener.id} ({listener.url}) because stop {listener.stop_tag}')
+                payload = message.serialize()
+                payload['stop_tag'] = listener.stop_tag
+                requests.post(listener.url, json=payload)
+
     return 'success'
 
-@app.route('/self', methods=['POST'])
-def self_route():
-    print(request.json)
-    return ''

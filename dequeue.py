@@ -58,8 +58,8 @@ while True:
             vehicle_to_stop_tag[vehicle['vehicle']] = stop
 
     response = requests.post('http://localhost:5000/broadcast', json={'stop_tags': stop_tags, 'vehicle_ids': vehicle_ids, 'vehicle_to_stop': vehicle_to_stop_tag})
-    print('Will run again in 2 minutes...')
-    time.sleep(120)
+    print('Will run again in 30 seconds...')
+    time.sleep(30)
 #hot_garbage = find_vehicles_at_stops_for_route('J')
 
 # hot_garbage['predictions'][<stop>0]['stopTag']
