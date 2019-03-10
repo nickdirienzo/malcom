@@ -5,9 +5,6 @@ Deliver messages in your distributed system using SF MTA transit solutions.
 
 Expect messages to be delayed, but eventually make it to their destinations.
 
-What are you even talking about?
-================================
-
 Set up SQLite 
 =============
 
