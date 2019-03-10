@@ -1,5 +1,5 @@
 # malcom
-Built during Noisebridge's (SF Stupid Shit No One Needs And Terrible Ideas Hackathon)[https://www.meetup.com/noisebridge/events/258638768/?fbclid=IwAR2FxppM9DOchRSGShdgtov1q_e8ykU2qgizhOR1q4QQwPRgVxWAiPBGXpM].
+Built during Noisebridge's [SF Stupid Shit No One Needs And Terrible Ideas Hackathon](https://www.meetup.com/noisebridge/events/258638768/?fbclid=IwAR2FxppM9DOchRSGShdgtov1q_e8ykU2qgizhOR1q4QQwPRgVxWAiPBGXpM).
 
 Deliver messages in your distributed system using SF MTA transit solutions.
 
