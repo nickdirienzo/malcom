@@ -177,6 +177,7 @@ def broadcast():
     print(f'Listeners to send to: {len(listeners)} / {len(all_listeners)}')
     for listener in listeners:
         for message in messages:
+            print(f'Sending Message {message.id} on bus {message.vehicle_id} to {listener.id} ({listener.url}) because stop {listener.stop_tag}')
             requests.post(listener.url, json=message.serialize())
     return 'success'
 
