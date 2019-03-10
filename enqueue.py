@@ -45,13 +45,16 @@ client.agency = "sf-muni"
 def load_stops(clipper_url):
     route_config = client.get_route_config()
     routes = route_config['route']
+    added_stops = set([])
     for route in routes:
         for stop in route['stop']:
-            listener = Listener(stop_tag=stop['tag'], url=clipper_url)
-            db.session.add(listener)
+            if stop['tag'] not in added_stops:
+                listener = Listener(stop_tag=stop['tag'], url=clipper_url)
+                db.session.add(listener)
 
-            s = Stop(tag=stop['tag'], route_tag=route['tag'])
-            db.session.add(s)
+                added_stops.add(stop['tag'])
+                s = Stop(tag=stop['tag'], route_tag=route['tag'])
+                db.session.add(s)
     db.session.commit()
 
 @app.route('/messages/<int:message_id>')
@@ -157,8 +160,21 @@ def board_bus():
 def broadcast():
     vehicle_ids = request.json['vehicle_ids']
     stop_tags = request.json['stop_tags']
+    vehicle_to_stop = request.json['vehicle_to_stop']
     messages = Message.query.filter(Message.vehicle_id.in_(vehicle_ids)).all()
-    listeners = Listener.query.filter(Listener.stop_tag.in_(stop_tags)).all()
+    actual_vehicles = []
+    for message in messages:
+        actual_vehicles.append(message.vehicle_id)
+    print(actual_vehicles)
+    actual_stops = []
+    for v in actual_vehicles:
+        actual_stops.append(vehicle_to_stop[v])
+    print(actual_stops)
+    all_messages = Message.query.all()
+    print(f'Messages to send: {len(messages)} / {len(all_messages)}')
+    listeners = Listener.query.filter(Listener.stop_tag.in_(actual_stops)).all()
+    all_listeners = Listener.query.all()
+    print(f'Listeners to send to: {len(listeners)} / {len(all_listeners)}')
     for listener in listeners:
         for message in messages:
             requests.post(listener.url, json=message.serialize())

@@ -1,3 +1,5 @@
+import time
+
 import py_nextbus
 import requests
 
@@ -41,21 +43,24 @@ def find_vehicles_at_stops_for_route(route):
                 stop_vehicle_status[stop['stopTag']] = {'vehicle': next_at_stop['vehicle'], 'minutes': next_at_stop['minutes']}
     return stop_vehicle_status
 
-all_stopped_vehicles = []
-for route in route_stop_dict.keys():
-    print(route)
-    all_stopped_vehicles.append(find_vehicles_at_stops_for_route(route))
+while True:
+    all_stopped_vehicles = []
+    for route in route_stop_dict.keys():
+        all_stopped_vehicles.append(find_vehicles_at_stops_for_route(route))
 
-stop_tags = []
-vehicle_ids = []
-for route in all_stopped_vehicles:
-    stop_tags += [k for k in route.keys()]
-    for stop, vehicle in route.items():
-        vehicle_ids.append(vehicle['vehicle'])
+    stop_tags = []
+    vehicle_ids = []
+    vehicle_to_stop_tag = {}
+    for route in all_stopped_vehicles:
+        stop_tags += [k for k in route.keys()]
+        for stop, vehicle in route.items():
+            vehicle_ids.append(vehicle['vehicle'])
+            vehicle_to_stop_tag[vehicle['vehicle']] = stop
 
-response = requests.post('http://localhost:5000/broadcast', json={'stop_tags': stop_tags, 'vehicle_ids': vehicle_ids})
+    response = requests.post('http://localhost:5000/broadcast', json={'stop_tags': stop_tags, 'vehicle_ids': vehicle_ids, 'vehicle_to_stop': vehicle_to_stop_tag})
+    print('Will run again in 2 minutes...')
+    time.sleep(120)
 #hot_garbage = find_vehicles_at_stops_for_route('J')
 
-import pdb; pdb.set_trace()
 # hot_garbage['predictions'][<stop>0]['stopTag']
 # hot_garbage['predictions'][<stop>0]['direction']['prediction'][0] > 'vehicle' 'minutes'
