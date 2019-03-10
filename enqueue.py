@@ -59,8 +59,10 @@ def load_stops(clipper_url):
 def get_messages():
     vehicle_ids = request.args.getlist('v_id')
     include_location = request.args.get('include_location')
-    
-    messages = Message.query.filter(Message.vehicle_id.in_(vehicle_ids)).all()
+    if vehicle_ids: 
+        messages = Message.query.filter(Message.vehicle_id.in_(vehicle_ids)).all()
+    else:
+        messages = Message.query.all()
     if not include_location:
         return jsonify([m.serialize() for m in messages])
 
@@ -100,26 +102,21 @@ def board_bus():
         stop_tag,
         stop.route_tag
     ))
-    directions = response.json()['predictions']['direction']
-    if len(directions) == 1:
-        directions = [direction]
-
+    predictions = response.json()['predictions']['direction']['prediction']
     bus_departing = False
-    for direction in directions:
-        predictions = direction['prediction']
-        for prediction in predictions:
-            minutes = int(prediction['minutes'])
-            # There's a bus departing. Enqueue.
-            if minutes < 1:
-                bus_departing = True
-                message = Message(
-                    content=content,
-                    stop_tag=stop.tag,
-                    vehicle_id=prediction['vehicle']
-                )
-                db.session.add(message)
-                db.session.commit()
-                return jsonify({'vehicle_id': message.vehicle_id, 'boarded_at': message.created_at})
+    for prediction in predictions:
+        minutes = int(prediction['minutes'])
+        # There's a bus departing. Enqueue.
+        if minutes < 1:
+            bus_departing = True
+            message = Message(
+                content=content,
+                stop_tag=stop.tag,
+                vehicle_id=prediction['vehicle']
+            )
+            db.session.add(message)
+            db.session.commit()
+            return jsonify({'vehicle_id': message.vehicle_id, 'boarded_at': message.created_at})
 
     if bus_departing is False:
         min_in_ms = int(predictions[0]['minutes']) * 60 * 1000
