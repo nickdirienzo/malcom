@@ -28,7 +28,7 @@ class Message(db.Model):
     def serialize(self):
         return {
             'id': self.id,
-            'content': self.content,
+            'message': self.content,
             'vehicle_id': self.vehicle_id,
             'origin_stop': self.stop_tag,
         }
@@ -178,7 +178,9 @@ def broadcast():
     for listener in listeners:
         for message in messages:
             print(f'Sending Message {message.id} on bus {message.vehicle_id} to {listener.id} ({listener.url}) because stop {listener.stop_tag}')
-            requests.post(listener.url, json=message.serialize())
+            payload = message.serialize()
+            payload['stop_tag'] = listener.stop_tag
+            requests.post(listener.url, json=payload)
     return 'success'
 
 @app.route('/self', methods=['POST'])
